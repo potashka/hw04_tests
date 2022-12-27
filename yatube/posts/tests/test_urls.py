@@ -19,29 +19,31 @@ class PostURLTests(TestCase):
             description='Тестовое описание группы',
         )
         cls.post = Post.objects.create(
-            author = cls.user,
+            author=cls.user,
             text='Тестовый пост',
             group=cls.group
         )
-    
+
     def setUp(self):
         self.guest_client = Client()
-        self.user = PostURLTests.user 
+        self.user = PostURLTests.user
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-    
+
     def test_urls_anonymous_guest_client(self):
         """Доступ неавторизованного пользователя"""
-        pages = ('/',
-                f'/group/{self.group.slug}/',
-                f'/profile/{self.user.username}/',
-                f'/posts/{self.post.id}/')
+        pages = (
+            '/',
+            f'/group/{self.group.slug}/',
+            f'/profile/{self.user.username}/',
+            f'/posts/{self.post.id}/'
+        )
         for page in pages:
             with self.subTest():
                 response = self.guest_client.get(page)
                 error = f'Ошибка: нет доступа к странице {page}'
                 self.assertEqual(response.status_code, HTTPStatus.OK, error)
-    
+
     def test_urls_redirect_anonymous_guest_client(self):
         """Редирект неавторизованного пользователя"""
         url1 = '/auth/login/?next=/create/'
@@ -51,17 +53,19 @@ class PostURLTests(TestCase):
         for page, value in pages.items():
             response = self.guest_client.get(page)
             self.assertRedirects(response, value)
-    
+
     def test_urls_authorized_client(self):
         """Доступ авторизованного пользователя"""
-        pages = ('/create/',
-                f'/posts/{self.post.pk}/edit/')
+        pages = (
+            '/create/',
+            f'/posts/{self.post.pk}/edit/'
+        )
         for page in pages:
             with self.subTest():
                 response = self.authorized_client.get(page)
                 error = f'Ошибка: нет доступа к странице {page}'
                 self.assertEqual(response.status_code, HTTPStatus.OK, error)
-    
+
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         templates_url_names = {

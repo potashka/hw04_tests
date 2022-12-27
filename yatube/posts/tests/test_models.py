@@ -26,7 +26,6 @@ class PostModelTest(TestCase):
             text='Тестовый пост',
         )
 
-
     def test_model_post_have_correct_object_names(self):
         """Проверяем, что у модели Пост корректно работает __str__."""
         post = PostModelTest.post
@@ -34,15 +33,16 @@ class PostModelTest(TestCase):
         self.assertEqual(self.post.__str__(),
                          post.text[:LEN_OF_POSTS],
                          error_name)
-    
+
     def test_model_group_have_correct_object_names(self):
         """Проверяем, что у модели Группа корректно работает __str__."""
         group = PostModelTest.group
-        error_name = f"Название {group.title} не совпадает с моделью {self.group.__str__()}"
+        error = (f'Название {group.title} не совпадает с '
+                 f'моделью {self.group.__str__()}')
         self.assertEqual(self.group.__str__(),
                          group.title,
-                         error_name)
- 
+                         error)
+
     def test_title_label(self):
         '''Проверка заполнения verbose_name в модели Post'''
         post = PostModelTest.post
@@ -52,11 +52,11 @@ class PostModelTest(TestCase):
                           'author': 'Автор'}
         for field, expected_value in field_verboses.items():
             with self.subTest(field=field):
-                error_name = f'Поле {field} ожидало значение {expected_value}'
+                error = f'Поле {field} ожидало значение {expected_value}'
                 self.assertEqual(
                     post._meta.get_field(field).verbose_name,
-                    expected_value, error_name)
-    
+                    expected_value, error)
+
     def test_title_help_text(self):
         '''Проверка заполнения help_text в модели Пост'''
         post = PostModelTest.post
