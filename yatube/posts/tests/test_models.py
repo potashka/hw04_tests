@@ -1,12 +1,7 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import TestCase
 
-from django.conf import settings
-
-
-from ..models import Group, Post
-
-User = get_user_model()
+from ..models import Group, Post, User
 
 LEN_OF_POSTS = settings.LEN_OF_POSTS
 
@@ -23,29 +18,27 @@ class PostModelTest(TestCase):
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовый пост',
+            text='Тестовый пост для тестирования созданных моделей',
+            group=cls.group,
         )
 
     def test_model_post_have_correct_object_names(self):
         """Проверяем, что у модели Пост корректно работает __str__."""
-        post = PostModelTest.post
         error_name = f"Вывод не имеет {LEN_OF_POSTS} символов"
         self.assertEqual(self.post.__str__(),
-                         post.text[:LEN_OF_POSTS],
+                         self.post.text[:LEN_OF_POSTS],
                          error_name)
 
     def test_model_group_have_correct_object_names(self):
         """Проверяем, что у модели Группа корректно работает __str__."""
-        group = PostModelTest.group
-        error = (f'Название {group.title} не совпадает с '
+        error = (f'Название {self.group.title} не совпадает с '
                  f'моделью {self.group.__str__()}')
         self.assertEqual(self.group.__str__(),
-                         group.title,
+                         self.group.title,
                          error)
 
     def test_title_label(self):
         '''Проверка заполнения verbose_name в модели Post'''
-        post = PostModelTest.post
         field_verboses = {'text': 'Текст поста',
                           'pub_date': 'Дата публикации',
                           'group': 'Группа',
@@ -54,17 +47,16 @@ class PostModelTest(TestCase):
             with self.subTest(field=field):
                 error = f'Поле {field} ожидало значение {expected_value}'
                 self.assertEqual(
-                    post._meta.get_field(field).verbose_name,
+                    self.post._meta.get_field(field).verbose_name,
                     expected_value, error)
 
     def test_title_help_text(self):
         '''Проверка заполнения help_text в модели Пост'''
-        post = PostModelTest.post
         field_help_texts = {'text': 'Введите текст поста',
                             'group': 'Группа, к которой будет относиться пост'}
         for field, expected_value in field_help_texts.items():
             with self.subTest(field=field):
                 error_name = f'Поле {field} ожидало значение {expected_value}'
                 self.assertEqual(
-                    post._meta.get_field(field).help_text,
+                    self.post._meta.get_field(field).help_text,
                     expected_value, error_name)
