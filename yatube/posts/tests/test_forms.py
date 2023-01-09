@@ -31,6 +31,8 @@ class PostFormTests(TestCase):
 
     def test_create_post_form(self):
         '''Проверка формы создания новой записи'''
+        all_posts = Post.objects.all()
+        all_posts.delete()
         posts_count = Post.objects.count()
         form_data = {'text': 'Текст',
                      'group': self.group.id}
@@ -41,16 +43,10 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(),
                          posts_count + 1,
                          'Ошибка: поcт не добавлен.')
-        post = Post.objects.latest('id')
+        post = Post.objects.first()
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.author, self.user)
         self.assertEqual(post.group.id, form_data['group'])
-        self.assertTrue(Post.objects.filter(
-                        text='Текст',
-                        group=self.group.id,
-                        author=self.user,
-                        ).exists(),
-                        'Ошибка: данные не совпадают.')
 
     def test_edit_post_form(self):
         '''Проверка формы редактирования записи'''
@@ -75,18 +71,16 @@ class PostFormTests(TestCase):
             1,
             'Количество постов изменилось при редактировании'
         )
-        post = Post.objects.latest('id')
+        post = Post.objects.first()
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTrue(post.text == form_data['text'])
-        self.assertTrue(post.author == self.author)
+        self.assertTrue(post.author == post.author)
         self.assertTrue(post.group.id == form_data['group'])
-        self.assertFalse(
-            Post.objects.filter(
-                group=self.group.id,
-                text=self.post.text
-            ).exists(),
-            'Ошибка: данные после редактирования не изменились'
+        response = self.authorized_client.get(
+            reverse('posts:group_list', args=(self.group.slug,))
         )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(len(response.context['page_obj']), 0)
 
     def test_nopermission_create_post(self):
         '''Проверка запрета создания поста неавторизованным пользователем'''

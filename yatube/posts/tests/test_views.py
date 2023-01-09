@@ -7,7 +7,6 @@ from ..models import Group, Post, User
 from posts.forms import PostForm
 
 NUM_POSTS_PAG_TEST = settings.NUM_POSTS_PAG_TEST
-
 QUANTITY_OF_POSTS = settings.QUANTITY_OF_POSTS
 
 
@@ -57,8 +56,8 @@ class PostViewsTests(TestCase):
                     args=(self.group.slug,))
         )
         self.assertEqual(
-            response.context['group'].slug,
-            self.group.slug
+            response.context['group'],
+            self.group
         )
         self.sample_context_test_func(response.context)
 
@@ -69,9 +68,8 @@ class PostViewsTests(TestCase):
                     args=(self.user.username,))
         )
         self.assertEqual(
-            response.context['author']
-            .username,
-            self.user.username,
+            response.context['author'],
+            self.user,
             'Ошибка: шаблон сформирован с неправильным контекстом'
         )
         self.sample_context_test_func(response.context)
@@ -155,8 +153,8 @@ class PaginatorViewsTest(TestCase):
                 (self.group.slug,)),
         )
         pages = (
-            ('?page=1', 10),
-            ('?page=2', 5),
+            ('?page=1', QUANTITY_OF_POSTS),
+            ('?page=2', (NUM_POSTS_PAG_TEST - QUANTITY_OF_POSTS)),
         )
         for url, args in page_urls:
             with self.subTest():

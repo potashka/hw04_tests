@@ -39,13 +39,11 @@ class PostURLTests(TestCase):
             ('posts:post_create', None, 'posts/create_post.html'),
             ('posts:post_edit', (self.post.pk,), 'posts/create_post.html'),
         )
+        create_edit_names = ['posts:post_create', 'posts:post_edit']
         for name, args, template in templates_url_names:
             with self.subTest(name=name):
-                if name == 'posts:post_edit':
+                if name in create_edit_names:
                     response = self.authorized_author.get(
-                        reverse(name, args=args))
-                elif name == 'posts:post_create':
-                    response = self.authorized_client.get(
                         reverse(name, args=args))
                 else:
                     response = self.client.get(reverse(name, args=args))
@@ -70,15 +68,8 @@ class PostURLTests(TestCase):
         )
         for name, args, url in url_names:
             with self.subTest(name=name):
-                if name == 'posts:post_edit':
-                    response = self.authorized_author.get(
-                        reverse(name, args=args))
-                elif name == 'posts:post_create':
-                    response = self.authorized_client.get(
-                        reverse(name, args=args))
-                else:
-                    response = self.client.get(reverse(name, args=args))
-                self.assertEqual(response.request.get('PATH_INFO'), url)
+                response = reverse(name, args=args)
+                self.assertEqual(response, url)
 
     def test_urls_author(self):
         """Доступ автора к страницам"""
@@ -123,8 +114,12 @@ class PostURLTests(TestCase):
                 response = self.authorized_client.get(reverse(name, args=args))
                 error = f'Ошибка: нет доступа к странице {url}'
                 if name == 'posts:post_edit':
-                    url1 = f'/posts/{self.post.pk}/'
-                    self.assertRedirects(response, url1)
+                    # url1 = f'/posts/{self.post.pk}/'
+                    self.assertRedirects(
+                        response,
+                        reverse('posts:post_detail',
+                                args=(self.post.pk,))
+                    )
                 else:
                     self.assertEqual(
                         response.status_code,
@@ -148,16 +143,18 @@ class PostURLTests(TestCase):
             ('posts:post_edit', (self.post.pk,),
                 f'/posts/{self.post.pk}/edit/'),
         )
+        create_edit_names = ['posts:post_create', 'posts:post_edit']
         for name, args, url in pages:
             with self.subTest(name=name):
                 response = self.client.get(reverse(name, args=args))
                 error = f'Ошибка: нет доступа к странице {url}'
-                if name == 'posts:post_create':
-                    url_1 = '/auth/login/?next=/create/'
-                    self.assertRedirects(response, url_1)
-                elif name == 'posts:post_edit':
-                    url_2 = f'/auth/login/?next=/posts/{self.post.id}/edit/'
-                    self.assertRedirects(response, url_2)
+                if name in create_edit_names:
+                    reverse_login = reverse('users:login')
+                    reverse_name = reverse(name, args=args)
+                    self.assertRedirects(
+                        response,
+                        f'{reverse_login}?next={reverse_name}'
+                    )
                 else:
                     self.assertEqual(
                         response.status_code,
