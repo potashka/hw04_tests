@@ -4,7 +4,6 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from ..models import Group, Post, User
-
 from posts.forms import PostForm
 
 NUM_POSTS_PAG_TEST = settings.NUM_POSTS_PAG_TEST
@@ -113,7 +112,7 @@ class PostViewsTests(TestCase):
             description='Тестовое описание группы',
         )
         response = self.authorized_client.get(
-            reverse('posts:group_list', kwargs={'slug': group2.slug})
+            reverse('posts:group_list', args=(group2.slug,))
         )
         self.assertEqual(len(response.context['page_obj']), 0)
         posts_count = Post.objects.filter(group=self.group).count()
