@@ -39,14 +39,10 @@ class PostURLTests(TestCase):
             ('posts:post_create', None, 'posts/create_post.html'),
             ('posts:post_edit', (self.post.pk,), 'posts/create_post.html'),
         )
-        create_edit_names = ['posts:post_create', 'posts:post_edit']
         for name, args, template in templates_url_names:
             with self.subTest(name=name):
-                if name in create_edit_names:
-                    response = self.authorized_author.get(
-                        reverse(name, args=args))
-                else:
-                    response = self.client.get(reverse(name, args=args))
+                response = self.authorized_author.get(
+                    reverse(name, args=args))
                 error = f'Ошибка: {name} ожидал шаблон {template}'
                 self.assertTemplateUsed(response, template, error)
 
@@ -68,8 +64,7 @@ class PostURLTests(TestCase):
         )
         for name, args, url in url_names:
             with self.subTest(name=name):
-                response = reverse(name, args=args)
-                self.assertEqual(response, url)
+                self.assertEqual(reverse(name, args=args), url)
 
     def test_urls_author(self):
         """Доступ автора к страницам"""
@@ -114,7 +109,6 @@ class PostURLTests(TestCase):
                 response = self.authorized_client.get(reverse(name, args=args))
                 error = f'Ошибка: нет доступа к странице {url}'
                 if name == 'posts:post_edit':
-                    # url1 = f'/posts/{self.post.pk}/'
                     self.assertRedirects(
                         response,
                         reverse('posts:post_detail',

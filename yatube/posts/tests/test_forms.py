@@ -31,8 +31,7 @@ class PostFormTests(TestCase):
 
     def test_create_post_form(self):
         '''Проверка формы создания новой записи'''
-        all_posts = Post.objects.all()
-        all_posts.delete()
+        Post.objects.all().delete()
         posts_count = Post.objects.count()
         form_data = {'text': 'Текст',
                      'group': self.group.id}
